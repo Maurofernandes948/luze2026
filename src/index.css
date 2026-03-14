@@ -1,0 +1,49 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+
+@theme {
+  --color-gold: #B8954A;
+  --color-gold-lt: #D4B06A;
+  --color-gold-dk: #8A6E30;
+  --color-dark: #0C0B09;
+  --color-dark-2: #161410;
+  --color-dark-3: #201E18;
+  --color-dark-4: #2A2720;
+  --color-cream: #F7F3EC;
+  --color-cream-2: #EEE9DF;
+  --color-cream-3: #E4DDD0;
+  --color-wa: #25D366;
+  --color-wa-dk: #128C7E;
+  
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Outfit", sans-serif;
+
+  --radius-r: 14px;
+  --radius-r-lg: 22px;
+  --radius-r-xl: 32px;
+
+  --shadow-sh: 0 2px 20px rgba(0,0,0,.08);
+  --shadow-sh-md: 0 8px 40px rgba(0,0,0,.14);
+  --shadow-sh-lg: 0 20px 60px rgba(0,0,0,.22);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans text-[#1C1A15] bg-cream antialiased;
+  }
+}
+
+.glass-nav {
+  @apply bg-dark/95 backdrop-blur-xl border-b border-white/10 shadow-sm;
+}
+
+.btn-wa {
+  @apply flex items-center justify-center gap-2 bg-wa hover:bg-wa-dk text-white py-3.5 px-6 rounded-r transition-all duration-300 font-semibold text-sm shadow-lg shadow-wa/20;
+}
+
+.cta-glow {
+  @apply absolute -inset-24 bg-gold/20 blur-3xl rounded-full pointer-events-none;
+}
