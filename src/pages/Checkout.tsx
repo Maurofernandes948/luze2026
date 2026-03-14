@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
-import { CheckCircle2, MessageCircle, MapPin, CreditCard, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, MapPin, CreditCard, ShieldCheck } from 'lucide-react';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 import { formatCurrency, WHATSAPP_NUMBER } from '../constants';
 
 export default function Checkout() {
@@ -151,7 +152,7 @@ export default function Checkout() {
                 disabled={isSubmitting}
                 className="w-full bg-gold text-dark py-5 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20 disabled:opacity-50"
               >
-                {isSubmitting ? 'A processar...' : 'Confirmar Pedido'} <MessageCircle size={16} />
+                {isSubmitting ? 'A processar...' : 'Confirmar Pedido'} <WhatsAppIcon size={16} />
               </button>
 
               <div className="mt-8 flex items-center justify-center gap-2 text-white/30 text-[10px] uppercase tracking-widest font-bold">

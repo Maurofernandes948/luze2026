@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, MessageCircle, ShoppingCart, User, LogOut } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, LogOut } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { STORE_NAME, STORE_SLOGAN, WHATSAPP_NUMBER } from '../constants';
@@ -103,7 +104,7 @@ export default function Header() {
             target="_blank"
             className="bg-wa hover:bg-wa-dk text-white px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-wa/20 flex items-center gap-2"
           >
-            <MessageCircle size={14} /> WhatsApp
+            <WhatsAppIcon size={14} /> WhatsApp
           </a>
         </ul>
 

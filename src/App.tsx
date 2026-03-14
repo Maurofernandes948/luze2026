@@ -11,7 +11,8 @@ import Checkout from './pages/Checkout';
 import AdminDashboard from './pages/AdminDashboard';
 import Setup from './pages/Setup';
 import { STORE_NOTICE, STORE_NAME, INSTAGRAM_HANDLE, EMAIL_ADDRESS, WHATSAPP_DISPLAY, STORE_CITY } from './constants';
-import { MapPin, MessageCircle, Instagram, Mail } from 'lucide-react';
+import { MapPin, Instagram, Mail } from 'lucide-react';
+import WhatsAppIcon from './components/WhatsAppIcon';
 
 function Footer() {
   const whatsappLink = (text: string) => `https://wa.me/244941540638?text=${encodeURIComponent(text)}`;
@@ -30,7 +31,7 @@ function Footer() {
             </p>
             <div className="flex items-center gap-4">
               {[
-                { icon: <MessageCircle size={18} />, link: whatsappLink('Olá!') },
+                { icon: <WhatsAppIcon size={18} />, link: whatsappLink('Olá!') },
                 { icon: <Instagram size={18} />, link: `https://instagram.com/${INSTAGRAM_HANDLE}` },
                 { icon: <Mail size={18} />, link: `mailto:${EMAIL_ADDRESS}` }
               ].map((s, i) => (
@@ -70,7 +71,7 @@ function Footer() {
                 <MapPin size={18} className="text-gold shrink-0" /> {STORE_CITY}
               </li>
               <li className="flex items-center gap-4 text-white/50 text-sm font-light">
-                <MessageCircle size={18} className="text-gold shrink-0" /> {WHATSAPP_DISPLAY}
+                <WhatsAppIcon size={18} className="text-gold shrink-0" /> {WHATSAPP_DISPLAY}
               </li>
               <li className="flex items-center gap-4 text-white/50 text-sm font-light">
                 <Instagram size={18} className="text-gold shrink-0" /> @{INSTAGRAM_HANDLE}
@@ -150,7 +151,7 @@ export default function App() {
                   target="_blank"
                   className="fixed bottom-10 right-10 z-50 w-20 h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
                 >
-                  <MessageCircle size={36} />
+                  <WhatsAppIcon size={36} />
                   <div className="absolute right-full mr-6 bg-dark text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                     Encomendar agora!
                   </div>

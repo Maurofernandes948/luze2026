@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowRight, 
-  MessageCircle, 
   Tag, 
   ShieldCheck, 
   ChevronRight, 
@@ -13,6 +12,7 @@ import {
   Mail,
   X
 } from 'lucide-react';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 import { 
   STATS, 
   GALLERY, 
@@ -108,7 +108,7 @@ export default function Home() {
               Ver Coleção <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </a>
             <a href={whatsappLink('Olá! Vim pelo site.')} target="_blank" className="w-full sm:w-auto border border-white/30 hover:bg-white/10 text-white px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all">
-              <MessageCircle size={16} /> Falar Connosco
+              <WhatsAppIcon size={16} /> Falar Connosco
             </a>
           </motion.div>
 
@@ -332,7 +332,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div className="space-y-6">
               {[
-                { icon: <MessageCircle size={24} />, title: 'WhatsApp', val: WHATSAPP_DISPLAY, link: whatsappLink('Olá!'), color: 'bg-wa/10 text-wa' },
+                { icon: <WhatsAppIcon size={24} />, title: 'WhatsApp', val: WHATSAPP_DISPLAY, link: whatsappLink('Olá!'), color: 'bg-wa/10 text-wa' },
                 { icon: <Instagram size={24} />, title: 'Instagram', val: `@${INSTAGRAM_HANDLE}`, link: `https://instagram.com/${INSTAGRAM_HANDLE}`, color: 'bg-pink-50 text-pink-600' },
                 { icon: <Mail size={24} />, title: 'Email', val: EMAIL_ADDRESS, link: `mailto:${EMAIL_ADDRESS}`, color: 'bg-gold/10 text-gold-dk' }
               ].map((c, i) => (
@@ -369,7 +369,7 @@ export default function Home() {
                   target="_blank"
                   className="bg-wa text-white px-12 py-6 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-4 transition-all hover:bg-wa-dk shadow-2xl shadow-wa/20"
                 >
-                  <MessageCircle size={20} /> Encomendar pelo WhatsApp
+                  <WhatsAppIcon size={20} /> Encomendar pelo WhatsApp
                 </a>
               </div>
             </div>
