@@ -15,7 +15,6 @@ import {
 import WhatsAppIcon from '../components/WhatsAppIcon';
 import { 
   STATS, 
-  GALLERY, 
   WHATSAPP_NUMBER, 
   WHATSAPP_DISPLAY,
   INSTAGRAM_HANDLE, 
@@ -30,27 +29,30 @@ import {
 import { Product, GalleryItem } from '../types';
 import { useCart } from '../context/CartContext';
 
+import { ProductService } from '../services/product.service';
+import { GalleryService } from '../services/gallery.service';
+
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [activeFilter, setActiveFilter] = useState<'todos' | 'tenis' | 'roupas' | 'acessorios'>('todos');
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setProducts(data);
-        } else {
-          console.error('Expected array of products, got:', data);
-          setProducts([]);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch products:', err);
-        setProducts([]);
-      });
+    const loadData = async () => {
+      try {
+        const [productsData, galleryData] = await Promise.all([
+          ProductService.getProducts(),
+          GalleryService.getGalleryItems()
+        ]);
+        setProducts(productsData);
+        setGallery(galleryData);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      }
+    };
+    loadData();
   }, []);
 
   const filteredProducts = activeFilter === 'todos' 
@@ -85,7 +87,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-6xl md:text-8xl font-serif font-medium mb-8 leading-[1.1]"
+            className="text-4xl sm:text-6xl md:text-8xl font-serif font-medium mb-8 leading-[1.1]"
           >
             Vista-se com<br />
             <em className="italic font-normal text-gold-lt">Charme</em> & Elegância
@@ -94,7 +96,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-cream-3 mb-12 max-w-2xl mx-auto font-light tracking-wide"
+            className="text-base md:text-xl text-cream-3 mb-12 max-w-2xl mx-auto font-light tracking-wide px-4 sm:px-0"
           >
             {STORE_DESCRIPTION}
           </motion.p>
@@ -294,7 +296,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 auto-rows-[250px] md:auto-rows-[350px]">
-            {GALLERY.map((item) => (
+            {gallery.map((item) => (
               <div 
                 key={item.id} 
                 className={`group relative overflow-hidden rounded-3xl cursor-pointer ${item.tall ? 'row-span-2' : ''} ${item.wide ? 'md:col-span-2' : ''}`}

@@ -6,16 +6,18 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import AdminDashboard from './pages/AdminDashboard';
-import Setup from './pages/Setup';
-import { STORE_NOTICE, STORE_NAME, INSTAGRAM_HANDLE, EMAIL_ADDRESS, WHATSAPP_DISPLAY, STORE_CITY } from './constants';
+import ProtectedRoute from './components/ProtectedRoute';
+import { STORE_NOTICE, STORE_NAME, INSTAGRAM_HANDLE, EMAIL_ADDRESS, WHATSAPP_DISPLAY, STORE_CITY, WHATSAPP_NUMBER } from './constants';
 import { MapPin, Instagram, Mail } from 'lucide-react';
 import WhatsAppIcon from './components/WhatsAppIcon';
 
 function Footer() {
-  const whatsappLink = (text: string) => `https://wa.me/244941540638?text=${encodeURIComponent(text)}`;
+  const whatsappLink = (text: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 
   return (
     <footer className="bg-dark pt-32 pb-12">
@@ -92,27 +94,6 @@ function Footer() {
 }
 
 export default function App() {
-  const [isConfigured, setIsConfigured] = React.useState<boolean | null>(null);
-
-  React.useEffect(() => {
-    const checkConfig = async () => {
-      try {
-        const res = await fetch('/api/config/status');
-        const data = await res.json();
-        setIsConfigured(data.isConfigured);
-      } catch (error) {
-        setIsConfigured(false);
-      }
-    };
-    checkConfig();
-  }, []);
-
-  if (isConfigured === null) {
-    return <div className="min-h-screen bg-dark flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
-    </div>;
-  }
-
   return (
     <AuthProvider>
       <CartProvider>
@@ -123,41 +104,41 @@ export default function App() {
               <p>{STORE_NOTICE}</p>
             </div>
 
-            {!isConfigured ? (
+            <Header />
+
+            <main className="flex-grow">
               <Routes>
-                <Route path="*" element={<Setup />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
               </Routes>
-            ) : (
-              <>
-                <Header />
+            </main>
 
-                <main className="flex-grow">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/setup" element={<Setup />} />
-                  </Routes>
-                </main>
+            <Footer />
 
-                <Footer />
-
-                {/* Floating WhatsApp Button */}
-                <a 
-                  href={`https://wa.me/244941540638?text=${encodeURIComponent('Olá! Vim pelo site e quero fazer uma encomenda.')}`}
-                  target="_blank"
-                  className="fixed bottom-10 right-10 z-50 w-20 h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
-                >
-                  <WhatsAppIcon size={36} />
-                  <div className="absolute right-full mr-6 bg-dark text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    Encomendar agora!
-                  </div>
-                </a>
-              </>
-            )}
+            {/* Floating WhatsApp Button */}
+            <a 
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim pelo site e quero fazer uma encomenda.')}`}
+              target="_blank"
+              className="fixed bottom-10 right-10 z-50 w-20 h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
+            >
+              <WhatsAppIcon size={36} />
+              <div className="absolute right-full mr-6 bg-dark text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Encomendar agora!
+              </div>
+            </a>
           </div>
         </Router>
       </CartProvider>

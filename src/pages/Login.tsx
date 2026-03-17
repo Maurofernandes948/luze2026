@@ -4,31 +4,29 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 
+import { AuthService } from '../services/auth.service';
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        login(data.user);
-        navigate('/');
-      } else {
-        setError(data.error);
-      }
-    } catch (err) {
-      setError('Ocorreu um erro ao entrar.');
+      const user = await AuthService.loginUser(email, password);
+      login(user);
+      navigate('/');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Ocorreu um erro ao entrar. Verifique as suas credenciais.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -67,7 +65,10 @@ export default function Login() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-4">Palavra-passe</label>
+            <div className="flex justify-between items-center ml-4">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Palavra-passe</label>
+              <Link to="/forgot-password" className="text-[10px] uppercase tracking-widest font-bold text-gold hover:underline">Esqueceu-se?</Link>
+            </div>
             <div className="relative">
               <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" size={18} />
               <input 
@@ -83,9 +84,14 @@ export default function Login() {
 
           <button 
             type="submit"
-            className="w-full bg-gold text-dark py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20"
+            disabled={isSubmitting}
+            className={`w-full bg-gold text-dark py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all shadow-lg shadow-gold/20 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-gold-lt'}`}
           >
-            Entrar <ArrowRight size={16} />
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-dark border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>Entrar <ArrowRight size={16} /></>
+            )}
           </button>
         </form>
 

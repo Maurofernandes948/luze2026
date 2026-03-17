@@ -7,6 +7,8 @@ import { CheckCircle2, MapPin, CreditCard, ShieldCheck } from 'lucide-react';
 import WhatsAppIcon from '../components/WhatsAppIcon';
 import { formatCurrency, WHATSAPP_NUMBER } from '../constants';
 
+import { OrderService } from '../services/order.service';
+
 export default function Checkout() {
   const { cart, total, clearCart } = useCart();
   const { user } = useAuth();
@@ -22,29 +24,25 @@ export default function Checkout() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          total,
-          items: cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, price: item.price }))
-        }),
-      });
+      const orderPayload = {
+        total,
+        email: user.email,
+        items: cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, price: item.price }))
+      };
 
-      if (res.ok) {
-        setIsSuccess(true);
-        const orderData = await res.json();
-        
-        // Prepare WhatsApp message
-        const itemsList = cart.map(item => `- ${item.name} (x${item.quantity})`).join('\n');
-        const message = `Olá! Acabei de fazer o pedido #${orderData.id} no site.\n\nItens:\n${itemsList}\n\nTotal: ${formatCurrency(total)}\n\nAguardo instruções para o pagamento dos 50%.`;
-        
-        setTimeout(() => {
-          window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
-          clearCart();
-          navigate('/');
-        }, 3000);
-      }
+      const orderData = await OrderService.createOrder(user.id, orderPayload);
+
+      setIsSuccess(true);
+      
+      // Prepare WhatsApp message
+      const itemsList = cart.map(item => `- ${item.name} (x${item.quantity})`).join('\n');
+      const message = `Olá! Acabei de fazer o pedido #${orderData.id} no site.\n\nItens:\n${itemsList}\n\nTotal: ${formatCurrency(total)}\n\nAguardo instruções para o pagamento dos 50%.`;
+      
+      setTimeout(() => {
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+        clearCart();
+        navigate('/');
+      }, 3000);
     } catch (err) {
       console.error(err);
     } finally {
@@ -81,9 +79,9 @@ export default function Checkout() {
 
         <div className="grid lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-8">
-            <section className="bg-white p-10 rounded-[2.5rem] border border-dark/5 shadow-sm">
+            <section className="bg-white p-6 sm:p-10 rounded-[2.5rem] border border-dark/5 shadow-sm">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 bg-gold/10 text-gold rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gold/10 text-gold rounded-xl flex items-center justify-center shrink-0">
                   <MapPin size={20} />
                 </div>
                 <h3 className="text-xl font-serif font-medium text-dark">Entrega ao Domicílio</h3>
@@ -96,25 +94,25 @@ export default function Checkout() {
               </div>
             </section>
 
-            <section className="bg-white p-10 rounded-[2.5rem] border border-dark/5 shadow-sm">
+            <section className="bg-white p-6 sm:p-10 rounded-[2.5rem] border border-dark/5 shadow-sm">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 bg-gold/10 text-gold rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gold/10 text-gold rounded-xl flex items-center justify-center shrink-0">
                   <CreditCard size={20} />
                 </div>
                 <h3 className="text-xl font-serif font-medium text-dark">Método de Pagamento</h3>
               </div>
               <div className="space-y-4">
-                <div className="p-6 border-2 border-gold bg-gold/5 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gold text-dark rounded-full flex items-center justify-center font-bold">50/50</div>
+                <div className="p-4 sm:p-6 border-2 border-gold bg-gold/5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="w-12 h-12 bg-gold text-dark rounded-full flex items-center justify-center font-bold shrink-0">50/50</div>
                     <div>
                       <p className="font-bold text-dark">Modelo 50% / 50%</p>
                       <p className="text-xs text-dark/40">Metade agora, metade na entrega</p>
                     </div>
                   </div>
-                  <CheckCircle2 className="text-gold" size={24} />
+                  <CheckCircle2 className="text-gold hidden sm:block" size={24} />
                 </div>
-                <p className="text-[10px] uppercase tracking-widest text-dark/30 font-bold text-center px-10">
+                <p className="text-[10px] uppercase tracking-widest text-dark/30 font-bold text-center px-4 sm:px-10">
                   Aceitamos Transferência, Multicaixa Express e Dinheiro na entrega.
                 </p>
               </div>

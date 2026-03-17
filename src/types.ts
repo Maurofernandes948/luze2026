@@ -1,5 +1,5 @@
 export interface Product {
-  id: number;
+  id: string | number;
   name: string;
   category: 'tenis' | 'roupas' | 'acessorios';
   price: number;
@@ -14,10 +14,9 @@ export interface Stat {
 }
 
 export interface GalleryItem {
-  id: number;
+  id: string | number;
   image: string;
   title: string;
-  large?: boolean;
   tall?: boolean;
   wide?: boolean;
 }

@@ -42,43 +42,43 @@ export default function Cart() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="bg-white p-6 rounded-3xl border border-dark/5 flex items-center gap-6 shadow-sm"
+                  className="bg-white p-4 sm:p-6 rounded-3xl border border-dark/5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 shadow-sm"
                 >
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden bg-cream-2 shrink-0">
+                  <div className="w-full sm:w-24 h-48 sm:h-24 rounded-2xl overflow-hidden bg-cream-2 shrink-0">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                   
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="font-bold text-dark">{item.name}</h3>
+                        <h3 className="font-bold text-dark text-lg sm:text-base">{item.name}</h3>
                         <p className="text-[10px] uppercase tracking-widest text-gold-dk font-bold">{item.category}</p>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.id)}
-                        className="text-dark/20 hover:text-red-500 transition-colors"
+                        className="text-dark/20 hover:text-red-500 transition-colors p-2"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={20} />
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-4 sm:mt-0">
                       <div className="flex items-center gap-4 bg-cream-2 rounded-xl p-1">
                         <button 
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center text-dark/40 hover:text-dark transition-colors"
+                          className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center text-dark/40 hover:text-dark transition-colors"
                         >
-                          <Minus size={14} />
+                          <Minus size={16} />
                         </button>
-                        <span className="text-sm font-bold text-dark w-4 text-center">{item.quantity}</span>
+                        <span className="text-base sm:text-sm font-bold text-dark w-6 sm:w-4 text-center">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center text-dark/40 hover:text-dark transition-colors"
+                          className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center text-dark/40 hover:text-dark transition-colors"
                         >
-                          <Plus size={14} />
+                          <Plus size={16} />
                         </button>
                       </div>
-                      <span className="font-serif font-medium text-lg text-dark">
+                      <span className="font-serif font-medium text-xl sm:text-lg text-dark">
                         {formatCurrency(item.price * item.quantity)}
                       </span>
                     </div>
