@@ -27,6 +27,7 @@ export default function Header() {
   const navItems = [
     { label: 'Início', path: '/' },
     { label: 'Produtos', path: '/#produtos' },
+    { label: 'Comunidade', path: '/#comunidade' },
     { label: 'Pagamento', path: '/#pagamento' },
     { label: 'Portfólio', path: '/#portfolio' },
   ];

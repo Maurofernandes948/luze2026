@@ -26,15 +26,55 @@ import {
   STORE_DESCRIPTION,
   formatCurrency
 } from '../constants';
-import { Product, GalleryItem } from '../types';
+import { Product, GalleryItem, Testimonial } from '../types';
 import { useCart } from '../context/CartContext';
 
 import { ProductService } from '../services/product.service';
 import { GalleryService } from '../services/gallery.service';
+import { TestimonialService } from '../services/testimonial.service';
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([
+    {
+      id: 'seed-7',
+      name: 'Tênis Adidas Urban Black',
+      price: 18000,
+      category: 'tenis',
+      image: 'https://i.imgur.com/PXzUGNT.jpeg',
+      badge: 'Novo',
+      description: 'Tênis Adidas Urban em preto e branco, estilo clássico e conforto excepcional.'
+    },
+    {
+      id: 'seed-8',
+      name: 'Fato Executivo Slim Premium',
+      price: 20000,
+      category: 'roupas',
+      image: 'https://i.imgur.com/TvlWz3x.jpeg',
+      badge: 'Exclusivo',
+      description: 'Fato executivo com corte slim fit, tecido de alta qualidade e acabamento impecável para ocasiões de prestígio.'
+    },
+    {
+      id: 'seed-9',
+      name: 'Fato Executivo Modern Slim',
+      price: 25000,
+      category: 'roupas',
+      image: 'https://i.imgur.com/xobFvUZ.jpeg',
+      badge: 'Novo',
+      description: 'Fato executivo com corte moderno e ajuste slim, ideal para eventos formais e reuniões de negócios.'
+    },
+    {
+      id: 'seed-10',
+      name: 'Bolsa Elegance Premium',
+      price: 12000,
+      category: 'acessorios',
+      image: 'https://i.imgur.com/1v57UnY.jpeg',
+      badge: 'Promoção',
+      description: 'Bolsa feminina com design sofisticado e acabamento premium, perfeita para complementar o seu look com elegância.'
+    }
+  ]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'todos' | 'tenis' | 'roupas' | 'acessorios'>('todos');
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const { addToCart } = useCart();
@@ -42,14 +82,77 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [productsData, galleryData] = await Promise.all([
+        const [productsData, galleryData, testimonialsData] = await Promise.all([
           ProductService.getProducts(),
-          GalleryService.getGalleryItems()
+          GalleryService.getGalleryItems(),
+          TestimonialService.getTestimonials()
         ]);
-        setProducts(productsData);
-        setGallery(galleryData);
+        
+        // Only update if we have data in Supabase, otherwise keep our defaults
+        if (productsData.length > 0) {
+          // Check if all our seeds exist in Supabase
+          const seedNames = ['Tênis Adidas Urban Black', 'Fato Executivo Slim Premium', 'Fato Executivo Modern Slim', 'Bolsa Elegance Premium'];
+          const missingSeeds = products.filter(p => !productsData.some(pd => pd.name === p.name));
+          const outdatedSeeds = products.filter(p => {
+            const pd = productsData.find(pd => pd.name === p.name);
+            return pd && (pd.image !== p.image || pd.price !== p.price);
+          });
+
+          // Delete products that are not in our seed list (the ones we want to remove)
+          const productsToDelete = productsData.filter(pd => 
+            !seedNames.includes(pd.name) && 
+            ['Tênis Urban Gold', 'Vestido Elegance', 'Relógio Chrono', 'Bolsa Lacoste Celeste', 'Tênis Adidas Urban White', 'Tênis Casual Branco Premium'].includes(pd.name)
+          );
+
+          if (productsToDelete.length > 0) {
+            for (const p of productsToDelete) {
+              await ProductService.deleteProduct(p.id);
+            }
+            // Refresh data after deletion
+            const refreshedProducts = await ProductService.getProducts();
+            setProducts(refreshedProducts);
+          } else if (missingSeeds.length > 0 || outdatedSeeds.length > 0) {
+            for (const p of missingSeeds) {
+              const { id, ...productData } = p as any;
+              await ProductService.createProduct(productData);
+            }
+            for (const p of outdatedSeeds) {
+              const pd = productsData.find(pd => pd.name === p.name);
+              if (pd) {
+                const { id, ...productData } = p as any;
+                await ProductService.updateProduct(pd.id, productData);
+              }
+            }
+            const updatedProducts = await ProductService.getProducts();
+            setProducts(updatedProducts);
+          } else {
+            setProducts(productsData);
+          }
+        } else {
+          // If Supabase is empty, seed it with our defaults
+          for (const p of products) {
+            const { id, ...productData } = p as any;
+            await ProductService.createProduct(productData);
+          }
+        }
+
+        if (galleryData.length > 0) {
+          setGallery(galleryData);
+        } else {
+          // Seed gallery
+          for (const item of gallery) {
+            const { id, ...itemData } = item as any;
+            await GalleryService.createGalleryItem(itemData);
+          }
+        }
+        
+        if (testimonialsData.length > 0) {
+          setTestimonials(testimonialsData);
+        }
       } catch (err) {
         console.error('Failed to load data:', err);
+      } finally {
+        setLoading(false);
       }
     };
     loadData();
@@ -60,6 +163,17 @@ export default function Home() {
     : products.filter(p => p.category === activeFilter);
 
   const whatsappLink = (text: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin" />
+          <p className="text-gold-dk font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">Carregando Charme...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col">
@@ -168,7 +282,7 @@ export default function Home() {
             ))}
           </div>
 
-          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-8 md:gap-y-16">
             <AnimatePresence mode="popLayout">
               {filteredProducts.map((p) => (
                 <motion.div
@@ -177,43 +291,59 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="group"
+                  className="group flex flex-col"
                 >
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-cream-2 mb-6 shadow-sh hover:shadow-sh-lg transition-all duration-500">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-cream-2 mb-4 shadow-sm group-hover:shadow-xl transition-all duration-700">
                     <img 
                       src={p.image} 
                       alt={p.name} 
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                     />
-                    {p.badge && (
-                      <span className={`absolute top-5 left-5 text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full text-white shadow-lg ${p.badge === 'Exclusivo' ? 'bg-dark' : 'bg-gold'}`}>
-                        {p.badge}
-                      </span>
-                    )}
-                    <div className="absolute inset-0 bg-dark/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button 
-                        onClick={() => addToCart(p)}
-                        className="bg-white/90 backdrop-blur-sm text-dark px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transform translate-y-4 group-hover:translate-y-0 transition-transform flex items-center gap-2 hover:bg-gold hover:text-dark"
-                      >
-                        <Plus size={14} /> Adicionar ao Carrinho
-                      </button>
+                    
+                    {/* Badges */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                      {p.badge && (
+                        <span className={`text-[8px] md:text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full text-white shadow-lg backdrop-blur-md ${p.badge === 'Exclusivo' ? 'bg-dark/80' : 'bg-gold/80'}`}>
+                          {p.badge}
+                        </span>
+                      )}
                     </div>
-                  </div>
-                  <div className="px-2">
-                    <div className="flex items-center gap-2 text-[10px] text-gold-dk uppercase tracking-widest font-bold mb-3">
-                      <Tag size={12} className="text-gold" /> {p.category}
-                    </div>
-                    <h3 className="text-xl font-bold text-dark mb-2 group-hover:text-gold-dk transition-colors">{p.name}</h3>
-                    <p className="text-2xl font-serif font-medium text-dark mb-6">
-                      {formatCurrency(p.price)}
-                    </p>
+
+                    {/* Quick Add Overlay */}
+                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    
                     <button 
                       onClick={() => addToCart(p)}
-                      className="btn-wa w-full bg-dark text-white hover:bg-gold hover:text-dark"
+                      className="absolute bottom-4 left-4 right-4 bg-white text-dark py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 flex items-center justify-center gap-2 hover:bg-gold hover:text-dark shadow-2xl"
                     >
-                      <ShoppingCart size={18} /> Adicionar ao Carrinho
+                      <Plus size={14} /> <span className="hidden sm:inline">Adicionar</span>
                     </button>
+                  </div>
+
+                  <div className="flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[9px] text-gold-dk uppercase tracking-[0.2em] font-bold">
+                        {p.category}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-sm md:text-base font-bold text-dark mb-1 line-clamp-1 group-hover:text-gold-dk transition-colors">
+                      {p.name}
+                    </h3>
+                    
+                    <div className="mt-auto pt-2 flex items-center justify-between">
+                      <p className="text-lg md:text-xl font-serif font-medium text-dark">
+                        {formatCurrency(p.price)}
+                      </p>
+                      
+                      <button 
+                        onClick={() => addToCart(p)}
+                        className="sm:hidden w-8 h-8 bg-dark text-white rounded-full flex items-center justify-center hover:bg-gold hover:text-dark transition-all"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -280,42 +410,6 @@ export default function Home() {
                 <div className="text-5xl mb-8 transform transition-transform group-hover:scale-110">{m.icon}</div>
                 <h4 className="text-lg font-bold text-white mb-4">{m.title}</h4>
                 <p className="text-white/40 text-sm font-light leading-relaxed">{m.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Portfolio Section */}
-      <section id="portfolio" className="py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <p className="text-gold-dk font-bold uppercase tracking-[0.3em] text-[10px] mb-4">Galeria</p>
-            <h2 className="text-4xl md:text-6xl font-serif font-medium text-dark mb-6">O Nosso Portfólio</h2>
-            <p className="text-dark/50 max-w-2xl mx-auto font-light text-lg">Uma amostra dos produtos que já passaram pelas nossas mãos.</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 auto-rows-[250px] md:auto-rows-[350px]">
-            {gallery.map((item) => (
-              <div 
-                key={item.id} 
-                className={`group relative overflow-hidden rounded-3xl cursor-pointer ${item.tall ? 'row-span-2' : ''} ${item.wide ? 'md:col-span-2' : ''}`}
-                onClick={() => setSelectedImage(item)}
-              >
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                  <div className="text-center transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                    <span className="text-white font-bold tracking-[0.2em] uppercase text-xs">{item.title}</span>
-                    <div className="mt-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto text-white">
-                      <ArrowUpRight size={18} />
-                    </div>
-                  </div>
-                </div>
               </div>
             ))}
           </div>

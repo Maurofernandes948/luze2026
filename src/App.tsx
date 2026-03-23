@@ -1,7 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -93,55 +94,72 @@ function Footer() {
   );
 }
 
+function AppContent() {
+  const location = useLocation();
+  const isAdminPage = location.pathname === '/admin';
+
+  return (
+    <div className="min-h-screen flex flex-col selection:bg-gold/30 selection:text-dark">
+      {!isAdminPage && (
+        <>
+          {/* Top Bar */}
+          <div className="bg-dark text-white py-2.5 px-6 text-center text-[9px] md:text-[10px] uppercase tracking-[0.25em] font-bold z-[60] border-b border-white/5">
+            <p>{STORE_NOTICE}</p>
+          </div>
+          <Header />
+        </>
+      )}
+
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </main>
+
+      {!isAdminPage && (
+        <>
+          <Footer />
+          {/* Floating WhatsApp Button */}
+          <a 
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim pelo site e quero fazer uma encomenda.')}`}
+            target="_blank"
+            className="fixed bottom-10 right-10 z-50 w-20 h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
+          >
+            <WhatsAppIcon size={36} />
+            <div className="absolute right-full mr-6 bg-dark text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Encomendar agora!
+            </div>
+          </a>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <div className="min-h-screen flex flex-col selection:bg-gold/30 selection:text-dark">
-            {/* Top Bar */}
-            <div className="bg-dark text-white py-2.5 px-6 text-center text-[9px] md:text-[10px] uppercase tracking-[0.25em] font-bold z-[60] border-b border-white/5">
-              <p>{STORE_NOTICE}</p>
-            </div>
-
-            <Header />
-
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route 
-                  path="/admin" 
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-              </Routes>
-            </main>
-
-            <Footer />
-
-            {/* Floating WhatsApp Button */}
-            <a 
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim pelo site e quero fazer uma encomenda.')}`}
-              target="_blank"
-              className="fixed bottom-10 right-10 z-50 w-20 h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
-            >
-              <WhatsAppIcon size={36} />
-              <div className="absolute right-full mr-6 bg-dark text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Encomendar agora!
-              </div>
-            </a>
-          </div>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

@@ -20,3 +20,13 @@ export interface GalleryItem {
   tall?: boolean;
   wide?: boolean;
 }
+
+export interface Testimonial {
+  id: string | number;
+  customer_name: string;
+  product_name?: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  comment?: string;
+  created_at?: string;
+}

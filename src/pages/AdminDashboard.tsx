@@ -14,29 +14,36 @@ import {
   Save,
   Tag,
   Upload,
-  Loader2
+  Loader2,
+  Zap,
+  Scissors
 } from 'lucide-react';
 import { formatCurrency } from '../constants';
-import { Product } from '../types';
+import { Product, GalleryItem as GalleryItemType, Testimonial } from '../types';
+import { ImageProcessor } from '../services/imageProcessor';
 
 import { ProductService } from '../services/product.service';
 import { OrderService } from '../services/order.service';
 import { GalleryService } from '../services/gallery.service';
+import { TestimonialService } from '../services/testimonial.service';
 import { supabase } from '../config/supabase';
-import { GalleryItem as GalleryItemType } from '../types';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'gallery'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'gallery' | 'testimonials'>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [gallery, setGallery] = useState<GalleryItemType[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [clientCount, setClientCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [isTestimonialModalOpen, setIsTestimonialModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingGallery, setEditingGallery] = useState<GalleryItemType | null>(null);
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -54,11 +61,20 @@ export default function AdminDashboard() {
     wide: false
   });
 
+  const [testimonialFormData, setTestimonialFormData] = useState({
+    customer_name: '',
+    product_name: '',
+    media_url: '',
+    media_type: 'image' as 'image' | 'video',
+    comment: ''
+  });
+
   useEffect(() => {
     fetchProducts();
     fetchOrders();
     fetchClientCount();
     fetchGallery();
+    fetchTestimonials();
   }, []);
 
   const fetchProducts = async () => {
@@ -78,6 +94,16 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error('Failed to fetch gallery:', err);
       setGallery([]);
+    }
+  };
+
+  const fetchTestimonials = async () => {
+    try {
+      const data = await TestimonialService.getTestimonials();
+      setTestimonials(data);
+    } catch (err) {
+      console.error('Failed to fetch testimonials:', err);
+      setTestimonials([]);
     }
   };
 
@@ -180,6 +206,19 @@ export default function AdminDashboard() {
     }
   };
 
+  const openEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      price: product.price.toString(),
+      category: product.category,
+      image: product.image,
+      badge: product.badge || '',
+      description: product.description || ''
+    });
+    setIsModalOpen(true);
+  };
+
   const openEditGallery = (item: GalleryItemType) => {
     setEditingGallery(item);
     setGalleryFormData({
@@ -191,7 +230,47 @@ export default function AdminDashboard() {
     setIsGalleryModalOpen(true);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'gallery') => {
+  const handleTestimonialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingTestimonial) {
+        await TestimonialService.updateTestimonial(editingTestimonial.id, testimonialFormData);
+      } else {
+        await TestimonialService.createTestimonial(testimonialFormData);
+      }
+      setIsTestimonialModalOpen(false);
+      setEditingTestimonial(null);
+      setTestimonialFormData({ customer_name: '', product_name: '', media_url: '', media_type: 'image', comment: '' });
+      fetchTestimonials();
+    } catch (err) {
+      console.error('Failed to save testimonial:', err);
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string | number) => {
+    if (confirm('Tem a certeza que deseja eliminar este testemunho?')) {
+      try {
+        await TestimonialService.deleteTestimonial(id);
+        fetchTestimonials();
+      } catch (err) {
+        console.error('Failed to delete testimonial:', err);
+      }
+    }
+  };
+
+  const openEditTestimonial = (item: Testimonial) => {
+    setEditingTestimonial(item);
+    setTestimonialFormData({
+      customer_name: item.customer_name,
+      product_name: item.product_name || '',
+      media_url: item.media_url,
+      media_type: item.media_type,
+      comment: item.comment || ''
+    });
+    setIsTestimonialModalOpen(true);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'gallery' | 'testimonial') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -213,18 +292,81 @@ export default function AdminDashboard() {
 
       if (type === 'product') {
         setFormData({ ...formData, image: publicUrl });
-      } else {
+      } else if (type === 'gallery') {
         setGalleryFormData({ ...galleryFormData, image: publicUrl });
+      } else {
+        setTestimonialFormData({ 
+          ...testimonialFormData, 
+          media_url: publicUrl,
+          media_type: file.type.startsWith('video/') ? 'video' : 'image'
+        });
       }
     } catch (err: any) {
-      console.error('Error uploading image:', err);
-      if (err.message === 'Bucket not found') {
-        alert('Erro: O bucket "images" não foi encontrado no seu Supabase Storage. Por favor, crie um bucket público chamado "images" no seu painel do Supabase para ativar o carregamento de fotos.');
-      } else {
-        alert(`Erro ao carregar imagem: ${err.message || 'Erro desconhecido'}`);
-      }
+      console.error('Error uploading file:', err);
+      alert(`Erro ao carregar ficheiro: ${err.message || 'Erro desconhecido'}`);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleAICrop = async () => {
+    if (!formData.image) {
+      alert('Por favor, carregue ou insira o URL de uma imagem primeiro.');
+      return;
+    }
+
+    setIsCropping(true);
+    try {
+      // Fetch image and convert to base64
+      const response = await fetch(formData.image);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onloadend = () => {
+          const base64String = (reader.result as string).split(',')[1];
+          resolve(base64String);
+        };
+      });
+      
+      reader.readAsDataURL(blob);
+      const base64Image = await base64Promise;
+
+      const croppedBase64 = await ImageProcessor.cropImage(base64Image);
+      
+      if (croppedBase64) {
+        // Upload cropped image to Supabase
+        const fileName = `cropped-${Math.random().toString(36).substring(2)}.png`;
+        const filePath = `products/${fileName}`;
+        
+        const byteCharacters = atob(croppedBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const croppedBlob = new Blob([byteArray], { type: 'image/png' });
+
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(filePath, croppedBlob);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('images')
+          .getPublicUrl(filePath);
+
+        setFormData({ ...formData, image: publicUrl });
+        alert('Imagem cortada com sucesso pela IA!');
+      } else {
+        alert('A IA não conseguiu processar a imagem. Tente uma imagem mais clara.');
+      }
+    } catch (err) {
+      console.error('AI Crop error:', err);
+      alert('Erro ao processar imagem com IA. Verifique se o URL da imagem permite acesso (CORS).');
+    } finally {
+      setIsCropping(false);
     }
   };
 
@@ -250,21 +392,60 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6 pt-32">
+    <div className="min-h-screen bg-zinc-950 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
             <h1 className="text-4xl font-serif font-medium text-white mb-2">Painel de Controlo</h1>
-            <p className="text-white/40 text-sm">Gerencie os seus produtos, galeria e visualize as encomendas.</p>
+            <div className="flex items-center gap-4">
+              <p className="text-white/40 text-sm">Gerencie os seus produtos, galeria e visualize as encomendas.</p>
+              <a href="/" className="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-white transition-colors">Voltar ao Site</a>
+            </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             {activeTab === 'products' && (
-              <button 
-                onClick={() => { setEditingProduct(null); setFormData({ name: '', price: '', category: 'tenis', image: '', badge: '', description: '' }); setIsModalOpen(true); }}
-                className="bg-gold text-dark px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20"
-              >
-                <Plus size={18} /> Novo Produto
-              </button>
+              <>
+                <button 
+                  onClick={() => { 
+                    setEditingProduct(null); 
+                    setFormData({ name: '', price: '', category: 'tenis', image: '', badge: '', description: '' }); 
+                    setIsModalOpen(true); 
+                  }}
+                  className="bg-white/5 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-white/10 transition-all border border-white/10"
+                >
+                  <Plus size={18} /> Adicionar Tênis Novos
+                </button>
+                <button 
+                  onClick={async () => {
+                    if (confirm('Deseja adicionar os novos Tênis Adidas Urban (da imagem enviada) automaticamente?')) {
+                      try {
+                        const newProduct = {
+                          name: 'Adidas Urban White',
+                          price: 45000,
+                          category: 'tenis',
+                          image: 'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=800&q=80', // Placeholder for now, user can edit
+                          badge: 'Novo',
+                          description: 'Tênis Adidas Urban em branco, conforto e estilo para o dia a dia.'
+                        };
+                        await ProductService.createProduct(newProduct);
+                        fetchProducts();
+                        alert('Produto adicionado com sucesso! Pode editar a imagem agora.');
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }
+                  }}
+                  className="bg-white/5 text-gold px-6 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-gold/10 transition-all border border-gold/20"
+                >
+                  <Zap size={16} /> Quick Add
+                </button>
+                <button 
+                  onClick={() => { setEditingProduct(null); setFormData({ name: '', price: '', category: 'tenis', image: '', badge: '', description: '' }); setIsModalOpen(true); }}
+                  className="bg-gold text-dark px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20"
+                >
+                  <Plus size={18} /> Novo Produto
+                </button>
+              </>
             )}
             {activeTab === 'gallery' && (
               <button 
@@ -274,20 +455,29 @@ export default function AdminDashboard() {
                 <Plus size={18} /> Nova Imagem
               </button>
             )}
+            {activeTab === 'testimonials' && (
+              <button 
+                onClick={() => { setEditingTestimonial(null); setTestimonialFormData({ customer_name: '', product_name: '', media_url: '', media_type: 'image', comment: '' }); setIsTestimonialModalOpen(true); }}
+                className="bg-gold text-dark px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20"
+              >
+                <Plus size={18} /> Novo Testemunho
+              </button>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-8 mb-12 border-b border-white/5">
+        <div className="flex gap-8 mb-12 border-b border-white/5 overflow-x-auto pb-1 scrollbar-hide">
           {[
             { id: 'products', label: 'Produtos', icon: <Package size={16} /> },
-            { id: 'gallery', label: 'Galeria / Portfólio', icon: <ImageIcon size={16} /> },
+            { id: 'gallery', label: 'Galeria', icon: <ImageIcon size={16} /> },
+            { id: 'testimonials', label: 'Comunidade', icon: <Users size={16} /> },
             { id: 'orders', label: 'Encomendas', icon: <ShoppingBag size={16} /> }
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-4 text-xs uppercase tracking-widest font-bold flex items-center gap-2 transition-all relative ${
+              className={`pb-4 text-[10px] sm:text-xs uppercase tracking-widest font-bold flex items-center gap-2 transition-all relative whitespace-nowrap ${
                 activeTab === tab.id ? 'text-gold' : 'text-white/40 hover:text-white'
               }`}
             >
@@ -383,15 +573,59 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => openEditGallery(item)}
-                        className="flex-1 p-2 bg-white/5 text-white/40 hover:text-gold hover:bg-gold/10 rounded-xl transition-all flex items-center justify-center"
+                        className="flex-1 p-3 bg-white/5 text-white/40 hover:text-gold hover:bg-gold/10 rounded-xl transition-all flex items-center justify-center"
+                        title="Editar"
                       >
-                        <Edit2 size={14} />
+                        <Edit2 size={16} />
                       </button>
                       <button 
                         onClick={() => handleDeleteGallery(item.id)}
-                        className="flex-1 p-2 bg-white/5 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all flex items-center justify-center"
+                        className="flex-1 p-3 bg-white/5 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all flex items-center justify-center"
+                        title="Eliminar"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'testimonials' && (
+            <div className="lg:col-span-3 space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-serif font-medium text-white">Testemunhos das Clientes</h3>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-white/20">{testimonials.length} Total</span>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {testimonials.map((item) => (
+                  <div key={item.id} className="bg-dark-2 p-4 rounded-3xl border border-white/5 group">
+                    <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-dark-3 mb-4 relative">
+                      {item.media_type === 'video' ? (
+                        <video src={item.media_url} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={item.media_url} alt={item.customer_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      )}
+                      <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md px-2 py-1 rounded text-[8px] uppercase font-bold text-white">
+                        {item.media_type}
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-white mb-1">{item.customer_name}</h4>
+                    <p className="text-[10px] text-gold font-bold uppercase tracking-widest mb-4">{item.product_name}</p>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => openEditTestimonial(item)}
+                        className="flex-1 p-3 bg-white/5 text-white/40 hover:text-gold hover:bg-gold/10 rounded-xl transition-all flex items-center justify-center"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteTestimonial(item.id)}
+                        className="flex-1 p-3 bg-white/5 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all flex items-center justify-center"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -448,9 +682,9 @@ export default function AdminDashboard() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-dark-2 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-2xl bg-dark-2 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             >
-              <div className="p-8 md:p-12">
+              <div className="p-6 md:p-12">
                 <div className="flex items-center justify-between mb-10">
                   <h2 className="text-3xl font-serif font-medium text-white">
                     {editingProduct ? 'Editar Produto' : 'Novo Produto'}
@@ -552,9 +786,18 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     {formData.image && (
-                      <div className="mt-2 flex items-center gap-4 p-3 bg-white/5 rounded-xl">
+                      <div className="mt-2 flex flex-col sm:flex-row items-center gap-4 p-3 bg-white/5 rounded-xl">
                         <img src={formData.image} alt="Preview" className="w-12 h-12 object-cover rounded-lg" referrerPolicy="no-referrer" />
                         <span className="text-[10px] text-white/40 truncate flex-1">{formData.image}</span>
+                        <button 
+                          type="button"
+                          onClick={handleAICrop}
+                          disabled={isCropping}
+                          className="w-full sm:w-auto px-4 py-2 bg-gold/10 text-gold rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-gold/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {isCropping ? <Loader2 size={14} className="animate-spin" /> : <Scissors size={14} />}
+                          {isCropping ? 'A Cortar...' : 'Cortar com IA'}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -597,9 +840,9 @@ export default function AdminDashboard() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-xl bg-dark-2 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-xl bg-dark-2 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             >
-              <div className="p-8 md:p-12">
+              <div className="p-6 md:p-12">
                 <div className="flex items-center justify-between mb-10">
                   <h2 className="text-3xl font-serif font-medium text-white">
                     {editingGallery ? 'Editar Imagem' : 'Nova Imagem'}
@@ -698,6 +941,129 @@ export default function AdminDashboard() {
                     className="w-full bg-gold text-dark py-5 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20"
                   >
                     <Save size={18} /> {editingGallery ? 'Guardar Alterações' : 'Adicionar à Galeria'}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Testimonial Modal */}
+      <AnimatePresence>
+        {isTestimonialModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setIsTestimonialModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-xl bg-dark-2 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-6 md:p-12">
+                <div className="flex items-center justify-between mb-10">
+                  <h2 className="text-3xl font-serif font-medium text-white">
+                    {editingTestimonial ? 'Editar Testemunho' : 'Novo Testemunho'}
+                  </h2>
+                  <button onClick={() => setIsTestimonialModalOpen(false)} className="text-white/20 hover:text-white transition-colors">
+                    <X size={24} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleTestimonialSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-4">Nome da Cliente</label>
+                      <input 
+                        type="text" required 
+                        value={testimonialFormData.customer_name}
+                        onChange={e => setTestimonialFormData({...testimonialFormData, customer_name: e.target.value})}
+                        className="w-full bg-dark-3 border border-white/5 rounded-2xl py-4 px-6 text-white text-sm focus:border-gold outline-none transition-all"
+                        placeholder="Ex: Maria Silva"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-4">Produto Comprado</label>
+                      <input 
+                        type="text"
+                        value={testimonialFormData.product_name}
+                        onChange={e => setTestimonialFormData({...testimonialFormData, product_name: e.target.value})}
+                        className="w-full bg-dark-3 border border-white/5 rounded-2xl py-4 px-6 text-white text-sm focus:border-gold outline-none transition-all"
+                        placeholder="Ex: Tênis Urban Gold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-4">Foto ou Vídeo</label>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="relative group">
+                        <input 
+                          type="file" 
+                          accept="image/*,video/*"
+                          onChange={(e) => handleFileUpload(e, 'testimonial')}
+                          className="hidden"
+                          id="testimonial-media-upload"
+                        />
+                        <label 
+                          htmlFor="testimonial-media-upload"
+                          className="flex flex-col items-center justify-center w-full h-32 bg-dark-3 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-gold/50 hover:bg-gold/5 transition-all"
+                        >
+                          {isUploading ? (
+                            <Loader2 className="text-gold animate-spin" size={24} />
+                          ) : (
+                            <>
+                              <Upload className="text-white/20 mb-2" size={24} />
+                              <span className="text-[10px] uppercase font-bold text-white/40">Carregar Foto/Vídeo</span>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                      <div className="relative">
+                        <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                        <input 
+                          type="url" required 
+                          value={testimonialFormData.media_url}
+                          onChange={e => setTestimonialFormData({...testimonialFormData, media_url: e.target.value})}
+                          className="w-full bg-dark-3 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-white text-sm focus:border-gold outline-none transition-all"
+                          placeholder="Ou cole o URL do media..."
+                        />
+                      </div>
+                    </div>
+                    {testimonialFormData.media_url && (
+                      <div className="mt-2 flex items-center gap-4 p-3 bg-white/5 rounded-xl">
+                        {testimonialFormData.media_type === 'video' ? (
+                          <div className="w-12 h-12 bg-dark-3 rounded-lg flex items-center justify-center text-gold">
+                            <Zap size={18} />
+                          </div>
+                        ) : (
+                          <img src={testimonialFormData.media_url} alt="Preview" className="w-12 h-12 object-cover rounded-lg" referrerPolicy="no-referrer" />
+                        )}
+                        <span className="text-[10px] text-white/40 truncate flex-1">{testimonialFormData.media_url}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-4">Comentário (Opcional)</label>
+                    <textarea 
+                      value={testimonialFormData.comment}
+                      onChange={e => setTestimonialFormData({...testimonialFormData, comment: e.target.value})}
+                      className="w-full bg-dark-3 border border-white/5 rounded-2xl py-4 px-6 text-white text-sm focus:border-gold outline-none transition-all h-24 resize-none"
+                      placeholder="O que a cliente disse..."
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full bg-gold text-dark py-5 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gold-lt transition-all shadow-lg shadow-gold/20"
+                  >
+                    <Save size={18} /> {editingTestimonial ? 'Guardar Alterações' : 'Adicionar à Comunidade'}
                   </button>
                 </form>
               </div>
