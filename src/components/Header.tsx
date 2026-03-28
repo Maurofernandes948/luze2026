@@ -25,17 +25,28 @@ export default function Header() {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const navItems = [
-    { label: 'Início', path: '/' },
+    { label: 'Início', path: '/#inicio' },
     { label: 'Produtos', path: '/#produtos' },
     { label: 'Pagamento', path: '/#pagamento' },
     { label: 'Portfólio', path: '/#portfolio' },
     { label: 'Contacto', path: '/#contacto' },
   ];
 
+  const handleNavClick = (path: string) => {
+    setIsMenuOpen(false);
+    if (path.startsWith('/#') && location.pathname === '/') {
+      const id = path.replace('/#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-dark/90 backdrop-blur-md py-2 shadow-lg' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 group" onClick={() => setIsMenuOpen(false)}>
           <img 
             src="https://i.imgur.com/an34kDV.png" 
             alt={STORE_NAME}
@@ -47,21 +58,13 @@ export default function Header() {
         <ul className="hidden lg:flex items-center gap-8">
           {navItems.map((item) => (
             <li key={item.label}>
-              {item.path.startsWith('/#') ? (
-                <a 
-                  href={item.path}
-                  className="text-xs uppercase tracking-widest font-semibold text-white/80 hover:text-gold transition-colors"
-                >
-                  {item.label}
-                </a>
-              ) : (
-                <Link 
-                  to={item.path}
-                  className="text-xs uppercase tracking-widest font-semibold text-white/80 hover:text-gold transition-colors"
-                >
-                  {item.label}
-                </Link>
-              )}
+              <Link 
+                to={item.path}
+                onClick={() => handleNavClick(item.path)}
+                className="text-xs uppercase tracking-widest font-semibold text-white/80 hover:text-gold transition-colors"
+              >
+                {item.label}
+              </Link>
             </li>
           ))}
           
@@ -128,23 +131,13 @@ export default function Header() {
             <ul className="flex flex-col p-6 gap-4">
               {navItems.map((item) => (
                 <li key={item.label}>
-                  {item.path.startsWith('/#') ? (
-                    <a 
-                      href={item.path}
-                      className="text-sm uppercase tracking-widest font-bold text-white block py-2"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.label}
-                    </a>
-                  ) : (
-                    <Link 
-                      to={item.path}
-                      className="text-sm uppercase tracking-widest font-bold text-white block py-2"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  )}
+                  <Link 
+                    to={item.path}
+                    className="text-sm uppercase tracking-widest font-bold text-white block py-2"
+                    onClick={() => handleNavClick(item.path)}
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               ))}
               <div className="h-px bg-white/10 my-2" />

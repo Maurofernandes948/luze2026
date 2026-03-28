@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLocation } from 'react-router-dom';
 import { 
   ArrowRight, 
   Tag, 
@@ -36,6 +37,7 @@ import { GalleryService } from '../services/gallery.service';
 import { TestimonialService } from '../services/testimonial.service';
 
 export default function Home() {
+  const location = useLocation();
   const [products, setProducts] = useState<Product[]>([
     {
       id: 'seed-12',
@@ -143,6 +145,18 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<'todos' | 'tenis' | 'roupas' | 'acessorios'>('todos');
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -295,12 +309,12 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white pt-24">
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white pt-32 sm:pt-24">
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl sm:text-7xl md:text-9xl font-serif font-medium mb-8 leading-[1.1] drop-shadow-2xl"
+            className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-serif font-medium mb-8 leading-[1.1] drop-shadow-2xl"
           >
             Charme &<br />
             <em className="italic font-normal text-gold-lt">Elegância</em>
@@ -477,22 +491,22 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col md:flex-row items-center gap-12 relative">
-                <div className="flex-1 flex items-center gap-8 w-full">
-                  <div className="w-28 h-28 shrink-0 rounded-full border-[6px] border-gold flex items-center justify-center text-3xl font-black text-white bg-dark shadow-2xl shadow-gold/20">50%</div>
+                <div className="flex-1 flex items-center gap-6 sm:gap-8 w-full">
+                  <div className="w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-full border-[4px] sm:border-[6px] border-gold flex items-center justify-center text-2xl sm:text-3xl font-black text-white bg-dark shadow-2xl shadow-gold/20">50%</div>
                   <div>
-                    <h4 className="text-lg font-bold text-white mb-2">No momento da encomenda</h4>
-                    <p className="text-white/50 text-sm font-light leading-relaxed">Pague metade para confirmar e reservar o seu produto exclusivo.</p>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-2">No momento da encomenda</h4>
+                    <p className="text-white/50 text-xs sm:text-sm font-light leading-relaxed">Pague metade para confirmar e reservar o seu produto exclusivo.</p>
                   </div>
                 </div>
                 
                 <div className="hidden md:block text-5xl text-white/10 font-thin">/</div>
                 <div className="md:hidden w-full h-px bg-white/10 my-4" />
 
-                <div className="flex-1 flex items-center gap-8 w-full">
-                  <div className="w-28 h-28 shrink-0 rounded-full border-[6px] border-white/10 flex items-center justify-center text-3xl font-black text-gold-lt bg-dark shadow-2xl">50%</div>
+                <div className="flex-1 flex items-center gap-6 sm:gap-8 w-full">
+                  <div className="w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-full border-[4px] sm:border-[6px] border-white/10 flex items-center justify-center text-2xl sm:text-3xl font-black text-gold-lt bg-dark shadow-2xl">50%</div>
                   <div>
-                    <h4 className="text-lg font-bold text-white mb-2">No momento da entrega</h4>
-                    <p className="text-white/50 text-sm font-light leading-relaxed">Pague o restante quando receber o produto em mãos no conforto do seu lar.</p>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-2">No momento da entrega</h4>
+                    <p className="text-white/50 text-xs sm:text-sm font-light leading-relaxed">Pague o restante quando receber o produto em mãos no conforto do seu lar.</p>
                   </div>
                 </div>
               </div>

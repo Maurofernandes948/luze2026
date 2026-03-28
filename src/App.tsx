@@ -109,7 +109,7 @@ function AppContent() {
   const isAdminPage = location.pathname === '/admin';
 
   return (
-    <div className="min-h-screen flex flex-col selection:bg-gold/30 selection:text-dark">
+    <div className="min-h-screen flex flex-col selection:bg-gold/30 selection:text-dark overflow-x-hidden">
       {!isAdminPage && (
         <>
           {/* Top Bar */}
@@ -147,9 +147,10 @@ function AppContent() {
           <a 
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim pelo site e quero fazer uma encomenda.')}`}
             target="_blank"
-            className="fixed bottom-10 right-10 z-50 w-20 h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
+            className="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-50 w-14 h-14 sm:w-20 sm:h-20 bg-wa text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-500 group"
           >
-            <WhatsAppIcon size={36} />
+            <WhatsAppIcon size={24} className="sm:hidden" />
+            <WhatsAppIcon size={36} className="hidden sm:block" />
             <div className="absolute right-full mr-6 bg-dark text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               Encomendar agora!
             </div>
