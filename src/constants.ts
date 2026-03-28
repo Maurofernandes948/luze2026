@@ -6,7 +6,7 @@ export const formatCurrency = (value: number) => {
     currency: 'AOA',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value).replace('AOA', 'KZ');
+  }).format(value).replace('AOA', 'Kz');
 };
 
 export const STATS: Stat[] = [
@@ -15,7 +15,18 @@ export const STATS: Stat[] = [
   { value: '100%', label: 'Qualidade garantida' }
 ];
 
-export const GALLERY: GalleryItem[] = [];
+export const GALLERY: GalleryItem[] = [
+  {
+    id: 'gal-1',
+    title: 'Fato Executivo Premium Blue',
+    image: 'https://images.unsplash.com/photo-1594932224828-b4b057b7d6ee?q=80&w=1000&auto=format&fit=crop'
+  },
+  {
+    id: 'gal-2',
+    title: 'Fato Executivo Charcoal',
+    image: 'https://images.unsplash.com/photo-1593030103066-0093718efeb9?q=80&w=1000&auto=format&fit=crop'
+  }
+];
 
 export const STORE_NAME = 'Luzes de Charme';
 export const STORE_SLOGAN = 'Moda Premium';

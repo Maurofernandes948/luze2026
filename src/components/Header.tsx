@@ -27,28 +27,21 @@ export default function Header() {
   const navItems = [
     { label: 'Início', path: '/' },
     { label: 'Produtos', path: '/#produtos' },
-    { label: 'Comunidade', path: '/#comunidade' },
     { label: 'Pagamento', path: '/#pagamento' },
     { label: 'Portfólio', path: '/#portfolio' },
+    { label: 'Contacto', path: '/#contacto' },
   ];
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-dark/90 backdrop-blur-md py-2 shadow-lg' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-          <div className={`bg-gold text-dark flex items-center justify-center font-serif font-bold rounded-lg transition-all ${scrolled ? 'w-8 h-8 text-lg' : 'w-9 h-9 sm:w-10 sm:h-10 text-lg sm:text-xl'}`}>
-            {STORE_NAME[0]}
-          </div>
-          <div className="flex flex-col">
-            <span className={`font-bold tracking-tight leading-none text-white transition-all ${scrolled ? 'text-sm sm:text-base' : 'text-base sm:text-lg'}`}>
-              {STORE_NAME}
-            </span>
-            {!scrolled && (
-              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-gold font-bold">
-                {STORE_SLOGAN}
-              </span>
-            )}
-          </div>
+          <img 
+            src="https://i.imgur.com/an34kDV.png" 
+            alt={STORE_NAME}
+            referrerPolicy="no-referrer"
+            className={`object-contain transition-all ${scrolled ? 'h-8' : 'h-10 sm:h-12'}`}
+          />
         </Link>
 
         <ul className="hidden lg:flex items-center gap-8">

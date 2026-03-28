@@ -423,7 +423,7 @@ export default function AdminDashboard() {
                           name: 'Adidas Urban White',
                           price: 45000,
                           category: 'tenis',
-                          image: 'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=800&q=80', // Placeholder for now, user can edit
+                          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop', // High quality sneaker image
                           badge: 'Novo',
                           description: 'Tênis Adidas Urban em branco, conforto e estilo para o dia a dia.'
                         };

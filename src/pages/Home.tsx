@@ -10,7 +10,8 @@ import {
   Plus,
   Instagram,
   Mail,
-  X
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import WhatsAppIcon from '../components/WhatsAppIcon';
 import { 
@@ -24,7 +25,8 @@ import {
   STORE_NAME,
   STORE_SLOGAN,
   STORE_DESCRIPTION,
-  formatCurrency
+  formatCurrency,
+  GALLERY
 } from '../constants';
 import { Product, GalleryItem, Testimonial } from '../types';
 import { useCart } from '../context/CartContext';
@@ -36,40 +38,103 @@ import { TestimonialService } from '../services/testimonial.service';
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([
     {
-      id: 'seed-7',
-      name: 'Tênis Adidas Urban Black',
-      price: 18000,
-      category: 'tenis',
-      image: 'https://i.imgur.com/PXzUGNT.jpeg',
-      badge: 'Novo',
-      description: 'Tênis Adidas Urban em preto e branco, estilo clássico e conforto excepcional.'
-    },
-    {
-      id: 'seed-8',
-      name: 'Fato Executivo Slim Premium',
-      price: 20000,
-      category: 'roupas',
-      image: 'https://i.imgur.com/TvlWz3x.jpeg',
-      badge: 'Exclusivo',
-      description: 'Fato executivo com corte slim fit, tecido de alta qualidade e acabamento impecável para ocasiões de prestígio.'
-    },
-    {
-      id: 'seed-9',
-      name: 'Fato Executivo Modern Slim',
+      id: 'seed-12',
+      name: 'Fato Executivo Premium Blue',
       price: 25000,
       category: 'roupas',
-      image: 'https://i.imgur.com/xobFvUZ.jpeg',
+      image: 'https://images.unsplash.com/photo-1594932224828-b4b057b7d6ee?q=80&w=1000&auto=format&fit=crop',
       badge: 'Novo',
-      description: 'Fato executivo com corte moderno e ajuste slim, ideal para eventos formais e reuniões de negócios.'
+      description: 'Fato executivo clássico em tom azul, com corte impecável e tecido de alta qualidade para um visual profissional e elegante.'
     },
     {
-      id: 'seed-10',
-      name: 'Bolsa Elegance Premium',
-      price: 12000,
+      id: 'seed-13',
+      name: 'Fato Executivo Charcoal',
+      price: 25000,
+      category: 'roupas',
+      image: 'https://images.unsplash.com/photo-1593030103066-0093718efeb9?q=80&w=1000&auto=format&fit=crop',
+      badge: 'Novo',
+      description: 'Fato executivo em tom carvão, com corte moderno e acabamento de luxo.'
+    },
+    {
+      id: 'seed-14',
+      name: 'Tênis Premium Urban',
+      price: 35000,
+      category: 'tenis',
+      image: 'https://i.imgur.com/piCJQwF.jpeg',
+      badge: 'Destaque',
+      description: 'Tênis moderno com design urbano e conforto excepcional para o dia a dia.'
+    },
+    {
+      id: 'seed-15',
+      name: 'Conjunto Elegance Classic',
+      price: 45000,
+      category: 'roupas',
+      image: 'https://i.imgur.com/QqnZKtp.jpeg',
+      badge: 'Premium',
+      description: 'Conjunto clássico e sofisticado, ideal para ocasiões especiais que exigem um toque de classe.'
+    },
+    {
+      id: 'seed-16',
+      name: 'Acessório Luxo Gold',
+      price: 15000,
       category: 'acessorios',
-      image: 'https://i.imgur.com/1v57UnY.jpeg',
-      badge: 'Promoção',
-      description: 'Bolsa feminina com design sofisticado e acabamento premium, perfeita para complementar o seu look com elegância.'
+      image: 'https://i.imgur.com/uR2WGsi.jpeg',
+      badge: 'Exclusivo',
+      description: 'Acessório refinado que complementa seu visual com elegância e brilho.'
+    },
+    {
+      id: 'seed-17',
+      name: 'Tênis Exclusivo Special',
+      price: 15000,
+      category: 'tenis',
+      image: 'https://i.imgur.com/bK4iXV0.jpeg',
+      badge: 'Exclusivo',
+      description: 'Tênis exclusivo para ocasiões especiais, unindo estilo e sofisticação.'
+    },
+    {
+      id: 'seed-18',
+      name: 'Fato Executivo Classic Grey',
+      price: 18000,
+      category: 'roupas',
+      image: 'https://i.imgur.com/wcS9mZp.jpeg',
+      badge: 'Clássico',
+      description: 'Fato executivo clássico em tom cinza, ideal para reuniões e eventos formais.'
+    },
+    {
+      id: 'seed-19',
+      name: 'Tênis Urban Style White',
+      price: 12000,
+      category: 'tenis',
+      image: 'https://i.imgur.com/Q3V8gOW.jpeg',
+      badge: 'Moderno',
+      description: 'Tênis urbano com design moderno e conforto excepcional para o dia a dia.'
+    },
+    {
+      id: 'seed-20',
+      name: 'Fato Slim Fit Midnight',
+      price: 20000,
+      category: 'roupas',
+      image: 'https://i.imgur.com/1pM8G9T.jpeg',
+      badge: 'Slim Fit',
+      description: 'Fato slim fit em azul meia-noite, corte moderno e elegante.'
+    },
+    {
+      id: 'seed-21',
+      name: 'Conjunto Casual Modern',
+      price: 14000,
+      category: 'roupas',
+      image: 'https://i.imgur.com/2tuVlTn.jpeg',
+      badge: 'Casual',
+      description: 'Conjunto casual versátil, perfeito para um visual despojado e sofisticado.'
+    },
+    {
+      id: 'seed-22',
+      name: 'Sapato Social Premium',
+      price: 16000,
+      category: 'tenis',
+      image: 'https://i.imgur.com/o5Av0V1.jpeg',
+      badge: 'Premium',
+      description: 'Sapato social de couro premium, acabamento impecável para ocasiões de gala.'
     }
   ]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
@@ -91,7 +156,19 @@ export default function Home() {
         // Only update if we have data in Supabase, otherwise keep our defaults
         if (productsData.length > 0) {
           // Check if all our seeds exist in Supabase
-          const seedNames = ['Tênis Adidas Urban Black', 'Fato Executivo Slim Premium', 'Fato Executivo Modern Slim', 'Bolsa Elegance Premium'];
+          const seedNames = [
+            'Fato Executivo Premium Blue', 
+            'Fato Executivo Charcoal',
+            'Tênis Premium Urban',
+            'Conjunto Elegance Classic',
+            'Acessório Luxo Gold',
+            'Tênis Exclusivo Special',
+            'Fato Executivo Classic Grey',
+            'Tênis Urban Style White',
+            'Fato Slim Fit Midnight',
+            'Conjunto Casual Modern',
+            'Sapato Social Premium'
+          ];
           const missingSeeds = products.filter(p => !productsData.some(pd => pd.name === p.name));
           const outdatedSeeds = products.filter(p => {
             const pd = productsData.find(pd => pd.name === p.name);
@@ -101,7 +178,7 @@ export default function Home() {
           // Delete products that are not in our seed list (the ones we want to remove)
           const productsToDelete = productsData.filter(pd => 
             !seedNames.includes(pd.name) && 
-            ['Tênis Urban Gold', 'Vestido Elegance', 'Relógio Chrono', 'Bolsa Lacoste Celeste', 'Tênis Adidas Urban White', 'Tênis Casual Branco Premium'].includes(pd.name)
+            ['Tênis Urban Gold', 'Vestido Elegance', 'Relógio Chrono', 'Bolsa Lacoste Celeste', 'Tênis Adidas Urban White', 'Tênis Casual Branco Premium', 'Tênis New Balance Classic', 'Nem Balence', 'Nem balance', 'Tênis Adidas Urban Black', 'Fato Executivo Slim Premium', 'Fato Executivo Modern Slim', 'Bolsa Elegance Premium', 'New balance'].includes(pd.name)
           );
 
           if (productsToDelete.length > 0) {
@@ -137,12 +214,41 @@ export default function Home() {
         }
 
         if (galleryData.length > 0) {
-          setGallery(galleryData);
+          // Check for old gallery items to remove (the ones we just cleared from constants)
+          const oldGalleryTitles = ['Tênis Adidas Urban Black', 'Fato Executivo Slim Premium', 'Fato Executivo Modern Slim', 'Bolsa Elegance Premium'];
+          const itemsToDelete = galleryData.filter(item => oldGalleryTitles.includes(item.title));
+          
+          // Check for missing items from GALLERY
+          const missingGalleryItems = GALLERY.filter(item => !galleryData.some(gd => gd.title === item.title));
+          
+          if (itemsToDelete.length > 0 || missingGalleryItems.length > 0) {
+            if (itemsToDelete.length > 0) {
+              for (const item of itemsToDelete) {
+                await GalleryService.deleteGalleryItem(item.id);
+              }
+            }
+            if (missingGalleryItems.length > 0) {
+              for (const item of missingGalleryItems) {
+                const { id, ...itemData } = item as any;
+                await GalleryService.createGalleryItem(itemData);
+              }
+            }
+            const refreshedGallery = await GalleryService.getGalleryItems();
+            setGallery(refreshedGallery);
+          } else {
+            setGallery(galleryData);
+          }
         } else {
-          // Seed gallery
-          for (const item of gallery) {
-            const { id, ...itemData } = item as any;
-            await GalleryService.createGalleryItem(itemData);
+          // Seed gallery if constants.ts has items
+          if (GALLERY.length > 0) {
+            for (const item of GALLERY) {
+              const { id, ...itemData } = item as any;
+              await GalleryService.createGalleryItem(itemData);
+            }
+            const updatedGallery = await GalleryService.getGalleryItems();
+            setGallery(updatedGallery);
+          } else {
+            setGallery([]);
           }
         }
         
@@ -181,7 +287,7 @@ export default function Home() {
       <section id="inicio" className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=80" 
+            src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=2000&auto=format&fit=crop" 
             alt="Hero" 
             className="w-full h-full object-cover scale-105"
             referrerPolicy="no-referrer"
@@ -189,30 +295,23 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-block px-4 py-1.5 bg-gold/10 border border-gold/30 rounded-full text-gold-lt text-[10px] uppercase tracking-[0.3em] font-bold mb-8"
-          >
-            Nova Coleção 2025
-          </motion.div>
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white pt-24">
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-6xl md:text-8xl font-serif font-medium mb-8 leading-[1.1]"
+            className="text-5xl sm:text-7xl md:text-9xl font-serif font-medium mb-8 leading-[1.1] drop-shadow-2xl"
           >
-            Vista-se com<br />
-            <em className="italic font-normal text-gold-lt">Charme</em> & Elegância
+            Charme &<br />
+            <em className="italic font-normal text-gold-lt">Elegância</em>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-base md:text-xl text-cream-3 mb-12 max-w-2xl mx-auto font-light tracking-wide px-4 sm:px-0"
+            className="text-base md:text-xl text-white mb-12 max-w-2xl mx-auto font-light tracking-widest px-4 sm:px-0 drop-shadow-lg"
           >
-            {STORE_DESCRIPTION}
+            A sofisticação do clássico em um cenário moderno. Descubra a coleção que define o seu estilo.
           </motion.p>
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -220,10 +319,10 @@ export default function Home() {
             transition={{ delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
-            <a href="#produtos" className="group w-full sm:w-auto bg-gold text-dark px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:bg-gold-dk hover:text-white">
+            <a href="#produtos" className="group w-full sm:w-auto bg-gold text-dark px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:bg-gold-dk hover:text-white shadow-xl">
               Ver Coleção <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </a>
-            <a href={whatsappLink('Olá! Vim pelo site.')} target="_blank" className="w-full sm:w-auto border border-white/30 hover:bg-white/10 text-white px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all">
+            <a href={whatsappLink('Olá! Vim pelo site.')} target="_blank" className="w-full sm:w-auto border border-white/50 backdrop-blur-sm hover:bg-white/20 text-white px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all shadow-xl">
               <WhatsAppIcon size={16} /> Falar Connosco
             </a>
           </motion.div>
@@ -293,7 +392,7 @@ export default function Home() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="group flex flex-col"
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-cream-2 mb-4 shadow-sm group-hover:shadow-xl transition-all duration-700">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-cream-2 mb-4 shadow-sm group-hover:shadow-xl transition-all duration-700">
                     <img 
                       src={p.image} 
                       alt={p.name} 
@@ -334,7 +433,7 @@ export default function Home() {
                     
                     <div className="mt-auto pt-2 flex items-center justify-between">
                       <p className="text-lg md:text-xl font-serif font-medium text-dark">
-                        {formatCurrency(p.price)}
+                        Preço: {formatCurrency(p.price)}
                       </p>
                       
                       <button 
@@ -412,6 +511,65 @@ export default function Home() {
                 <p className="text-white/40 text-sm font-light leading-relaxed">{m.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Portfolio Section */}
+      <section id="portfolio" className="py-32 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-20">
+            <div className="max-w-2xl">
+              <p className="text-gold-dk font-bold uppercase tracking-[0.3em] text-[10px] mb-4">Portfólio</p>
+              <h2 className="text-4xl md:text-6xl font-serif font-medium text-dark mb-6">A Nossa Galeria</h2>
+              <p className="text-dark/50 font-light text-lg">Explore os nossos produtos em detalhe e veja a qualidade das nossas peças reais.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">
+            {gallery.length > 0 ? (
+              gallery.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  onClick={() => setSelectedImage(item)}
+                  className={`group relative overflow-hidden rounded-[2rem] cursor-pointer ${
+                    item.wide ? 'lg:col-span-2' : ''
+                  } ${
+                    item.tall ? 'lg:row-span-2' : ''
+                  }`}
+                >
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-10">
+                    <p className="text-gold-lt text-[10px] uppercase tracking-[0.3em] font-bold mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                      {STORE_NAME}
+                    </p>
+                    <h4 className="text-white text-2xl font-serif font-medium translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                      {item.title}
+                    </h4>
+                    <div className="mt-6 w-12 h-12 bg-white rounded-full flex items-center justify-center text-dark scale-0 group-hover:scale-100 transition-transform duration-500 delay-150">
+                      <ArrowUpRight size={20} />
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full flex flex-col items-center justify-center py-20 bg-cream-2 rounded-[2rem] border-2 border-dashed border-dark/5">
+                <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center text-gold mb-6">
+                  <ImageIcon size={32} />
+                </div>
+                <h3 className="text-xl font-serif font-medium text-dark mb-2">Galeria em Atualização</h3>
+                <p className="text-dark/40 text-sm font-light">Estamos a preparar novas imagens incríveis para si.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

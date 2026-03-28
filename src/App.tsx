@@ -26,8 +26,12 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-gold text-dark flex items-center justify-center font-serif text-xl font-bold rounded-lg">{STORE_NAME[0]}</div>
-              <span className="text-xl font-bold tracking-tight text-white">{STORE_NAME}</span>
+              <img 
+                src="https://i.imgur.com/an34kDV.png" 
+                alt={STORE_NAME}
+                referrerPolicy="no-referrer"
+                className="h-12 object-contain"
+              />
             </div>
             <p className="text-white/40 text-sm font-light leading-relaxed mb-10">
               Moda premium com elegância, estilo e personalidade. Cada peça é escolhida com cuidado especialmente para si.
@@ -48,9 +52,15 @@ function Footer() {
           <div>
             <h5 className="text-white/40 font-bold uppercase tracking-widest text-xs mb-8">Navegação</h5>
             <ul className="space-y-5">
-              {['Início', 'Produtos', 'Pagamento', 'Portfólio', 'Contacto'].map((item) => (
-                <li key={item}>
-                  <a href={`/#${item.toLowerCase()}`} className="text-white/50 text-sm font-light hover:text-gold transition-colors">{item}</a>
+              {[
+                { label: 'Início', id: 'inicio' },
+                { label: 'Produtos', id: 'produtos' },
+                { label: 'Pagamento', id: 'pagamento' },
+                { label: 'Portfólio', id: 'portfolio' },
+                { label: 'Contacto', id: 'contacto' }
+              ].map((item) => (
+                <li key={item.label}>
+                  <a href={`/#${item.id}`} className="text-white/50 text-sm font-light hover:text-gold transition-colors">{item.label}</a>
                 </li>
               ))}
             </ul>
